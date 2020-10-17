@@ -1,38 +1,49 @@
 #!/usr/bin/python3
 import sys
 import json
+import argparse
 
 CHIP_NAME = "nct6793-isa-0290"
-VOLTAGE = "+12V"
-ENDSWITH = "_input"
+VOLTAGE_CATEGORY = "+12V"
+VOLTAGE_ENTRY_SUFFIX = "_input"
+THRESHOLD = 11.5
 
-# reads historical data
+def low_voltage_action():
+    print('Low voltage action not defined.')
+    pass
 
-f = open('status.txt', 'r')
-line = f.readline()
-print('current status:', line)
-f.close()
+def main():
+    # reads historical data
+    try:
+        f = open('status.txt', 'r')
+        warning_count = int(f.readline())
+        print('current status:', warning_count)
+        f.close()
+    except:
+        warning_count = 0
 
-to_file = open("status.txt", 'w')
+    state_file = open("status.txt", 'w')
 
-# read json file
-with open('example.json', 'r') as f:
-    data1 = json.load(f)
-data2 = data1[CHIP_NAME][VOLTAGE]
-for key, value in data2.items():
-    if key.endswith(ENDSWITH):
-        if value > 11.5:
-            print('voltage: ', value)
-            if line == '0':
-                print('0->1')
-                to_file.write('1')
-            elif line == '1':
-                print('1->2')
-                to_file.write('2')
-            elif line == '2':
-                print('calling callback')
-                to_file.write('2')
-        else:
-            to_file.write('0')
-to_file.close()
+    # read json file
+    with open('example.json', 'r') as f:
+        sensors_info = json.load(f)
+    voltages = sensors_info[CHIP_NAME][VOLTAGE_CATEGORY]
+    for key, value in voltages.items():
+        if key.endswith(VOLTAGE_ENTRY_SUFFIX):
+            print('voltage:', value)
+            if value < THRESHOLD:
+                if warning_count == 0:
+                    print('state change: 0->1')
+                    state_file.write('1')
+                elif warning_count == 1:
+                    print('state change: 1->2')
+                    state_file.write('2')
+                elif warning_count == 2:
+                    print('hit threshold for 3 calls, calling low_voltage_action')
+                    state_file.write('2')
+                    low_voltage_action()
+            else:
+                state_file.write('0')
+    state_file.close()
 
+main()
