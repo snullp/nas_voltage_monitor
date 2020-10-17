@@ -1,0 +1,6 @@
+[Unit]
+Description=Low voltage monitor
+
+[Service]
+Type=oneshot
+ExecStart=sh -c "cd /path/to/this/folder;sensors -j | ./monitor.py"
