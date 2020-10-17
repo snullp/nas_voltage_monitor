@@ -1,15 +1,16 @@
 #!/usr/bin/python3
 import sys
 import json
+import os
 import argparse
 
 CHIP_NAME = "nct6793-isa-0290"
 VOLTAGE_CATEGORY = "+12V"
 VOLTAGE_ENTRY_SUFFIX = "_input"
-THRESHOLD = 11.5
+THRESHOLD = 11.6
 
 def low_voltage_action():
-    print('Low voltage action not defined.')
+    os.system('poweroff')
 
 def main():
     parser = argparse.ArgumentParser()
